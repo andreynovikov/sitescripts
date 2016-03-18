@@ -26,6 +26,9 @@ from StringIO import StringIO
 
 from sitescripts.utils import get_config
 
+BOOLEAN_STATES = {'1': True, 'yes': True, 'true': True, 'on': True,
+                  '0': False, 'no': False, 'false': False, 'off': False}
+
 def _parse_targetspec(value, name):
   target = {}
   for spec in value.split():
@@ -67,7 +70,9 @@ def _parse_notification(data, name):
     is_variant = current != notification
 
     if key == "inactive" and not is_variant:
-      current["inactive"] = True
+      if value.lower() not in BOOLEAN_STATES:
+        raise Exception("Not a boolean '%s' in file '%s'" % (value, name))
+      current["inactive"] = BOOLEAN_STATES[value.lower()]
     elif key == "severity":
       if value not in ("information", "critical", "normal"):
         raise Exception("Unknown severity value '%s' in file '%s'" % (value, name))
